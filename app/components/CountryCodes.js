@@ -1,0 +1,3 @@
+export const CountryCodesList=[
+{name:'Australia',code:'(+61)',value:'AU',flag:'????'},{name:'Brazil',code:'(+55)',value:'BR',flag:'????'},{name:'Canada',code:'(+1)',value:'CA',flag:'????'},{name:'France',code:'(+33)',value:'FR',flag:'????'},{name:'Germany',code:'(+49)',value:'DE',flag:'????'},{name:'India',code:'(+91)',value:'IN',flag:'????'},{name:'Japan',code:'(+81)',value:'JP',flag:'????'},{name:'Mexico',code:'(+52)',value:'MX',flag:'????'},{name:'United Kingdom',code:'(+44)',value:'GB',flag:'????'},{name:'United States',code:'(+1)',value:'US',flag:'????'}];
+export default CountryCodesList;
