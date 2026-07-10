@@ -1,3 +1,22 @@
-export const CountryCodesList=[
-{name:'Australia',code:'(+61)',value:'AU',flag:'????'},{name:'Brazil',code:'(+55)',value:'BR',flag:'????'},{name:'Canada',code:'(+1)',value:'CA',flag:'????'},{name:'France',code:'(+33)',value:'FR',flag:'????'},{name:'Germany',code:'(+49)',value:'DE',flag:'????'},{name:'India',code:'(+91)',value:'IN',flag:'????'},{name:'Japan',code:'(+81)',value:'JP',flag:'????'},{name:'Mexico',code:'(+52)',value:'MX',flag:'????'},{name:'United Kingdom',code:'(+44)',value:'GB',flag:'????'},{name:'United States',code:'(+1)',value:'US',flag:'????'}];
+import countries from 'i18n-iso-countries';
+import englishNames from 'i18n-iso-countries/langs/en.json';
+import {getCountries,getCountryCallingCode} from 'libphonenumber-js';
+
+countries.registerLocale(englishNames);
+const preferredNames={US:'United States',GB:'United Kingdom'};
+
+const flagFor=(countryCode)=>countryCode
+ .toUpperCase()
+ .replace(/./g,character=>String.fromCodePoint(127397+character.charCodeAt(0)));
+
+export const CountryCodesList=getCountries()
+ .map(value=>({
+  name:preferredNames[value]||countries.getName(value,'en')||value,
+  code:`(+${getCountryCallingCode(value)})`,
+  value,
+  flag:flagFor(value)
+ }))
+ .sort((a,b)=>a.name.localeCompare(b.name));
+
 export default CountryCodesList;
+

@@ -2,6 +2,7 @@ import React from 'react';
 import {Alert, Pressable, Text, View} from 'react-native';
 import {fireEvent, render, waitFor} from '@testing-library/react-native';
 import SignUpScreen from '../app/screens/SignUpScreen';
+import {CountryCodesList} from '../app/components/CountryCodes';
 
 jest.mock('@expo/vector-icons',()=>{const {Text}=require('react-native');return {Ionicons:({name})=><Text>{name}</Text>};});
 jest.mock('react-native-element-dropdown',()=>{const {Pressable,Text}=require('react-native');return {
@@ -21,6 +22,11 @@ const fillForm=(screen)=>{
 
 beforeEach(()=>{jest.clearAllMocks();global.fetch=jest.fn();jest.spyOn(Alert,'alert').mockImplementation(()=>{});});
 afterEach(()=>jest.restoreAllMocks());
+
+test('provides a complete searchable country dataset',()=>{
+ expect(CountryCodesList.length).toBeGreaterThan(200);
+ expect(CountryCodesList).toEqual(expect.arrayContaining([expect.objectContaining({name:'United States',value:'US',code:'(+1)'}),expect.objectContaining({name:'Canada',value:'CA',code:'(+1)'})]));
+});
 
 test('renders every required field, dropdown, checkbox, and button',()=>{
  const screen=render(<SignUpScreen navigation={navigation}/>);
@@ -43,6 +49,18 @@ test('alerts when required fields are empty',()=>{
  const screen=render(<SignUpScreen navigation={navigation}/>);
  fireEvent.press(screen.getByTestId('sign-up-button'));
  expect(Alert.alert).toHaveBeenCalledWith('Missing information','Please complete all fields.');
+ expect(fetch).not.toHaveBeenCalled();
+});
+
+test('alerts when agreements are not accepted',()=>{
+ const screen=render(<SignUpScreen navigation={navigation}/>);
+ fireEvent.changeText(screen.getByTestId('email-input'),'student@example.com');
+ fireEvent.changeText(screen.getByTestId('birth-date-input'),'2000-01-02');
+ fireEvent.changeText(screen.getByTestId('phone-input'),'8015550100');
+ fireEvent.changeText(screen.getByTestId('password-input'),'secret123');
+ fireEvent.changeText(screen.getByTestId('confirm-password-input'),'secret123');
+ fireEvent.press(screen.getByTestId('sign-up-button'));
+ expect(Alert.alert).toHaveBeenCalledWith('Agreement required','Please agree to all terms and conditions.');
  expect(fetch).not.toHaveBeenCalled();
 });
 
@@ -78,4 +96,5 @@ test('alerts when the STEDI request fails',async()=>{
  fireEvent.press(screen.getByTestId('sign-up-button'));
  await waitFor(()=>expect(Alert.alert).toHaveBeenCalledWith('Sign up failed','We could not create your account. Please try again.'));
 });
+
 
