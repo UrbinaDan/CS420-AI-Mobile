@@ -52,6 +52,23 @@ test('alerts when required fields are empty',()=>{
  expect(fetch).not.toHaveBeenCalled();
 });
 
+test('alerts when the email address is invalid',()=>{
+ const screen=render(<SignUpScreen navigation={navigation}/>);
+ fillForm(screen);
+ fireEvent.changeText(screen.getByTestId('email-input'),'not-an-email');
+ fireEvent.press(screen.getByTestId('sign-up-button'));
+ expect(Alert.alert).toHaveBeenCalledWith('Invalid email','Please enter a valid email address.');
+ expect(fetch).not.toHaveBeenCalled();
+});
+
+test('alerts when the birth date is not a real date',()=>{
+ const screen=render(<SignUpScreen navigation={navigation}/>);
+ fillForm(screen);
+ fireEvent.changeText(screen.getByTestId('birth-date-input'),'2026-02-31');
+ fireEvent.press(screen.getByTestId('sign-up-button'));
+ expect(Alert.alert).toHaveBeenCalledWith('Invalid birth date','Please use a real date in YYYY-MM-DD format.');
+ expect(fetch).not.toHaveBeenCalled();
+});
 test('alerts when agreements are not accepted',()=>{
  const screen=render(<SignUpScreen navigation={navigation}/>);
  fireEvent.changeText(screen.getByTestId('email-input'),'student@example.com');

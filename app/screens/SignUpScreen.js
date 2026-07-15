@@ -10,6 +10,9 @@ export default function SignUpScreen({navigation}){
  const [showPassword,setShowPassword]=useState(false),[showVerifyPassword,setShowVerifyPassword]=useState(false),[smsConsent,setSmsConsent]=useState(false),[termsConsent,setTermsConsent]=useState(false),[submitting,setSubmitting]=useState(false);
  const handleSignUp=async()=>{
   if(![email,birthDate,phone,region,password,verifyPassword].every(v=>v.trim())){Alert.alert('Missing information','Please complete all fields.');return}
+  if(!/^\S+@\S+\.\S+$/.test(email.trim())){Alert.alert('Invalid email','Please enter a valid email address.');return}
+  const parsedBirthDate=new Date(birthDate+'T00:00:00');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)||Number.isNaN(parsedBirthDate.getTime())||parsedBirthDate.toISOString().slice(0,10)!==birthDate){Alert.alert('Invalid birth date','Please use a real date in YYYY-MM-DD format.');return}
   if(!smsConsent||!termsConsent){Alert.alert('Agreement required','Please agree to all terms and conditions.');return}
   if(password!==verifyPassword){Alert.alert('Passwords do not match','Please enter matching passwords.');return}
   const agreedAt=new Date().toISOString();
