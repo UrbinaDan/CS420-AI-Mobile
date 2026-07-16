@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useLoginContext } from '../components/LoginContext';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function MobilityCoachScreen({ navigation }) {
+  const { isAuthenticated, sessionToken, userName } = useLoginContext();
   const [question, setQuestion] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [preference, setPreference] = useState('text');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [escalationStatus, setEscalationStatus] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    }
+  }, [isAuthenticated, navigation]);
+
+  if (!isAuthenticated) {
+    return null; // Do not briefly render private content
+  }
 
   const handleSubmit = async () => {
     if (!question || !phoneNumber) {
@@ -17,22 +31,35 @@ export default function MobilityCoachScreen({ navigation }) {
     setIsSubmitting(true);
 
     try {
-      // Assuming backend URL is provided via config, for now hardcoding to match test env
-      // or we can just mock the response for now if API_URL isn't set
-      // Since it's a mobile app, it needs an absolute URL, but we'll simulate the fetch.
-      
       const payload = {
         phoneNumber,
         question,
-        responsePreference: preference
+        aiResponse: '', // Safe default as AI interaction isn't happening on this screen yet
+        timestamp: new Date().toISOString(),
+        responsePreference: preference,
+        waitingForResponse: true,
+        sessionId: 'session_mobile', // Default for now
+        userId: userName || 'anonymous'
       };
       
-      // Simulate API call for local testing without full backend URL
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`${API_URL}/escalate-question`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-suresteps-session-token': sessionToken
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Server returned an error');
+      }
+
+      const result = await response.json();
       
       setEscalationStatus({
-        status: 'escalated',
-        estimatedResponseTime: '15-30 minutes'
+        status: result.status,
+        estimatedResponseTime: result.estimatedResponseTime || '15-30 minutes'
       });
       
     } catch (error) {

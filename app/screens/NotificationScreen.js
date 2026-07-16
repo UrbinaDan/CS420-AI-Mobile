@@ -1,4 +1,3 @@
-@'
 import {useState, useEffect} from 'react';
 import {Text, View, TouchableOpacity, Platform, Alert} from 'react-native';
 import Constants from "expo-constants";
@@ -38,10 +37,11 @@ export const sendPushNotification = async (expoPushToken, username) => {
 };
 
 export const getPushToken = async (username, sessionToken) => {
+    // Note: pushtokentestonly is an external STEDI dependency not yet implemented in CSAI420-Web
     const response = await fetch(`https://dev.stedi.me/pushtokentestonly/${username}`, {
         method: 'GET',
         headers: {
-            'suresteps.session.token': sessionToken,
+            'x-suresteps-session-token': sessionToken,
         },
     });
 
@@ -77,10 +77,11 @@ export const savePushTokenToAPI = async (userName, sessionToken, pushToken) => {
     const existingPushToken = await getPushToken(userName, sessionToken);
 
     if (existingPushToken !== pushToken) {
+        // Note: PATCH /user/:username is an external STEDI dependency not yet implemented in CSAI420-Web
         await fetch(`https://dev.stedi.me/user/${userName}`, {
             method: 'PATCH',
             headers: {
-                'suresteps.session.token': sessionToken,
+                'x-suresteps-session-token': sessionToken,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -137,11 +138,17 @@ const registerForPushNotificationsAsync = async () => {
     return pushToken.data;
 };
 
-export default function NotificationScreen() {
+export default function NotificationScreen({ navigation }) {
     const [notification, setNotification] = useState(null);
     const [sending, setSending] = useState(false);
     const styles = useThemeStyles();
-    const {userName, sessionToken} = useLoginContext();
+    const {userName, sessionToken, isAuthenticated} = useLoginContext();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+        }
+    }, [isAuthenticated, navigation]);
 
     useEffect(() => {
         let notificationListener;
@@ -195,6 +202,10 @@ export default function NotificationScreen() {
         }
     };
 
+    if (!isAuthenticated) {
+        return null;
+    }
+
     return (
         <View style={[styles.container, {justifyContent: 'space-between'}]}>
             <View>
@@ -217,5 +228,4 @@ export default function NotificationScreen() {
             </TouchableOpacity>
         </View>
     );
-}
-'@ | Set-Content -Path "app/screens/NotificationScreen.js" -Encoding UTF8
+}

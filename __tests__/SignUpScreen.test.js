@@ -80,13 +80,13 @@ test('posts the expected STEDI payload and returns home',async()=>{
  fireEvent.press(screen.getByTestId('sign-up-button'));
  await waitFor(()=>expect(fetch).toHaveBeenCalledTimes(1));
  const [url,request]=fetch.mock.calls[0];
- expect(url).toBe('https://dev.stedi.me/user');
+ expect(url).toBe('http://localhost:3000/user');
  expect(request.method).toBe('POST');
  expect(request.headers).toEqual({'Content-Type':'application/json'});
  const body=JSON.parse(request.body);
  expect(body).toMatchObject({userName:'student@example.com',email:'student@example.com',phone:'8015550100',region:'US',birthDate:'2000-01-02',password:'secret123',verifyPassword:'secret123'});
  ['agreedToTermsOfUseDate','agreedToCookiePolicyDate','agreedToPrivacyPolicyDate','agreedToTextMessageDate'].forEach(key=>expect(new Date(body[key]).toString()).not.toBe('Invalid Date'));
- await waitFor(()=>expect(navigation.navigate).toHaveBeenCalledWith('Home'));
+ await waitFor(()=>expect(navigation.navigate).toHaveBeenCalledWith('Login', { email: 'student@example.com' }));
 });
 
 test('alerts when the STEDI request fails',async()=>{
@@ -97,4 +97,16 @@ test('alerts when the STEDI request fails',async()=>{
  await waitFor(()=>expect(Alert.alert).toHaveBeenCalledWith('Sign up failed','We could not create your account. Please try again.'));
 });
 
-
+test('password input retains focus and state when typing', () => {
+ const screen=render(<SignUpScreen navigation={navigation}/>);
+ const passwordInput = screen.getByTestId('password-input');
+ 
+ fireEvent(passwordInput, 'focus');
+ fireEvent.changeText(passwordInput, 'p');
+ fireEvent.changeText(passwordInput, 'pa');
+ fireEvent.changeText(passwordInput, 'pas');
+ 
+ const currentPasswordInput = screen.getByTestId('password-input');
+ expect(currentPasswordInput).toBe(passwordInput);
+ expect(currentPasswordInput.props.value).toBe('pas');
+});

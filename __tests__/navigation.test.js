@@ -1,20 +1,27 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import App from '../../App';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import App from '../App';
 
 describe('App Navigation', () => {
-  it('renders Home screen and can navigate to SignUp', () => {
-    const { getByText } = render(<App />);
+  it('renders Home screen and can navigate to SignUp', async () => {
+    const { getByTestId, getByText } = render(<App />);
     
     // Verify Home screen is rendered
-    expect(getByText('Welcome to STEDI')).toBeTruthy();
-    expect(getByText('Sign Up')).toBeTruthy();
+    await waitFor(() => expect(getByText('Welcome to STEDI')).toBeTruthy());
+    expect(getByTestId('go-to-signup')).toBeTruthy();
+    expect(getByTestId('go-to-login')).toBeTruthy();
     
     // Navigate to SignUp
-    fireEvent.press(getByText('Sign Up'));
+    fireEvent.press(getByTestId('go-to-signup'));
+    await waitFor(() => expect(getByText('Create your account')).toBeTruthy());
+  });
+  
+  it('renders Home screen and can navigate to Login', async () => {
+    const { getByTestId, getByText } = render(<App />);
     
-    // Verify SignUp screen is rendered
-    expect(getByText('Welcome to STEDI')).toBeTruthy(); // SignUp screen also has this title in the challenge
-    // We can also verify other elements unique to SignUp if needed
+    // Navigate to Login
+    await waitFor(() => expect(getByTestId('go-to-login')).toBeTruthy());
+    fireEvent.press(getByTestId('go-to-login'));
+    await waitFor(() => expect(getByText('Welcome Back')).toBeTruthy());
   });
 });

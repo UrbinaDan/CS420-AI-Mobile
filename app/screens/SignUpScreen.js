@@ -4,7 +4,22 @@ import {Ionicons} from '@expo/vector-icons';
 import {Dropdown} from 'react-native-element-dropdown';
 import Checkbox from '../components/Checkbox';
 import {CountryCodesList} from '../components/CountryCodes';
-const API_URL='https://dev.stedi.me/user';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+
+const s=StyleSheet.create({flex:{flex:1},container:{padding:22,paddingBottom:40,backgroundColor:'#f7f8fc'},heading:{fontSize:27,fontWeight:'700',color:'#18204a',marginBottom:20},input:{backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingHorizontal:14,height:52,fontSize:16,marginBottom:13},dropdown:{backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingHorizontal:14,height:52,marginBottom:13},dropdownText:{fontSize:16,color:'#222'},dropdownItem:{fontSize:16,padding:15},passwordRow:{flexDirection:'row',alignItems:'center',backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingRight:14,height:52,marginBottom:13},passwordInput:{flex:1,height:'100%',paddingHorizontal:14,fontSize:16},checkboxText:{color:'#34384d',fontSize:14,lineHeight:20},link:{color:'#334ad1',fontSize:14,lineHeight:20,textDecorationLine:'underline'},button:{backgroundColor:'#4255d4',padding:16,borderRadius:10,alignItems:'center',marginTop:15},disabled:{opacity:.6},buttonText:{color:'#fff',fontSize:17,fontWeight:'700'},helpButton:{marginTop:16,alignItems:'center'},helpButtonText:{color:'#4255d4',fontSize:16,fontWeight:'600'}});
+
+function PasswordField({value,onChangeText,visible,onToggle,placeholder,testID}) {
+  return (
+    <View style={s.passwordRow}>
+      <TextInput style={s.passwordInput} placeholder={placeholder} value={value} onChangeText={onChangeText} secureTextEntry={!visible} autoCapitalize="none" testID={testID}/>
+      <Pressable onPress={onToggle} accessibilityLabel={visible?`Hide ${placeholder}`:`Show ${placeholder}`} testID={`${testID}-visibility-toggle`}>
+        <Ionicons name={visible?'eye-outline':'eye-off-outline'} size={25} color="#596080"/>
+      </Pressable>
+    </View>
+  );
+}
+
 export default function SignUpScreen({navigation}){
  const [email,setEmail]=useState(''),[birthDate,setBirthDate]=useState(''),[phone,setPhone]=useState(''),[region,setRegion]=useState('US'),[password,setPassword]=useState(''),[verifyPassword,setVerifyPassword]=useState('');
  const [showPassword,setShowPassword]=useState(false),[showVerifyPassword,setShowVerifyPassword]=useState(false),[smsConsent,setSmsConsent]=useState(false),[termsConsent,setTermsConsent]=useState(false),[submitting,setSubmitting]=useState(false);
@@ -14,11 +29,24 @@ export default function SignUpScreen({navigation}){
   if(password!==verifyPassword){Alert.alert('Passwords do not match','Please enter matching passwords.');return}
   const agreedAt=new Date().toISOString();
   const payload={userName:email,email,phone,region,birthDate,password,verifyPassword,agreedToTermsOfUseDate:agreedAt,agreedToCookiePolicyDate:agreedAt,agreedToPrivacyPolicyDate:agreedAt,agreedToTextMessageDate:agreedAt};
-  try{setSubmitting(true);const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!response.ok)throw new Error('Request failed');navigation.navigate('Home')}
-  catch(error){Alert.alert('Sign up failed','We could not create your account. Please try again.')}
-  finally{setSubmitting(false)}
+  try{
+    setSubmitting(true);
+    const response=await fetch(`${API_URL}/user`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!response.ok) {
+      if (response.status === 400) throw new Error('400');
+      if (response.status === 409) throw new Error('409');
+      if (response.status === 502) throw new Error('502');
+      throw new Error('Request failed');
+    }
+    navigation.navigate('Login', { email });
+  } catch(error){
+    if (error.message === '400') Alert.alert('Invalid input', 'Please ensure all fields are formatted correctly.');
+    else if (error.message === '409') Alert.alert('Duplicate user', 'An account with this email already exists.');
+    else if (error.message === '502') Alert.alert('Service unavailable', 'The upstream service is currently failing. Please try again later.');
+    else Alert.alert('Sign up failed','We could not create your account. Please try again.');
+  } finally{setSubmitting(false)}
  };
- const PasswordField=({value,onChangeText,visible,onToggle,placeholder,testID})=><View style={s.passwordRow}><TextInput style={s.passwordInput} placeholder={placeholder} value={value} onChangeText={onChangeText} secureTextEntry={!visible} autoCapitalize="none" testID={testID}/><Pressable onPress={onToggle} accessibilityLabel={visible?`Hide ${placeholder}`:`Show ${placeholder}`} testID={`${testID}-visibility-toggle`}><Ionicons name={visible?'eye-outline':'eye-off-outline'} size={25} color="#596080"/></Pressable></View>;
+
  return <KeyboardAvoidingView style={s.flex} behavior={Platform.OS==='ios'?'padding':undefined}><ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
   <Text style={s.heading}>Create your account</Text>
   <TextInput style={s.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" testID="email-input"/>
@@ -33,4 +61,3 @@ export default function SignUpScreen({navigation}){
   <Pressable style={s.helpButton} onPress={()=>navigation.navigate('ChatRegistration')}><Text style={s.helpButtonText}>Need Help? Use Chat Assistant</Text></Pressable>
  </ScrollView></KeyboardAvoidingView>
 }
-const s=StyleSheet.create({flex:{flex:1},container:{padding:22,paddingBottom:40,backgroundColor:'#f7f8fc'},heading:{fontSize:27,fontWeight:'700',color:'#18204a',marginBottom:20},input:{backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingHorizontal:14,height:52,fontSize:16,marginBottom:13},dropdown:{backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingHorizontal:14,height:52,marginBottom:13},dropdownText:{fontSize:16,color:'#222'},dropdownItem:{fontSize:16,padding:15},passwordRow:{flexDirection:'row',alignItems:'center',backgroundColor:'#fff',borderColor:'#cdd1e1',borderWidth:1,borderRadius:9,paddingRight:14,height:52,marginBottom:13},passwordInput:{flex:1,height:'100%',paddingHorizontal:14,fontSize:16},checkboxText:{color:'#34384d',fontSize:14,lineHeight:20},link:{color:'#334ad1',fontSize:14,lineHeight:20,textDecorationLine:'underline'},button:{backgroundColor:'#4255d4',padding:16,borderRadius:10,alignItems:'center',marginTop:15},disabled:{opacity:.6},buttonText:{color:'#fff',fontSize:17,fontWeight:'700'},helpButton:{marginTop:16,alignItems:'center'},helpButtonText:{color:'#4255d4',fontSize:16,fontWeight:'600'}});
