@@ -44,10 +44,11 @@ describe('HomeScreen', () => {
     expect(getByText('Mobility Coach')).toBeTruthy();
     expect(getByText('Notifications')).toBeTruthy();
     expect(getByText('Demo: AI-Assisted Registration')).toBeTruthy();
+    expect(getByText('Balance Test')).toBeTruthy();
+    expect(getByText('Care Plan')).toBeTruthy();
+    expect(getByText('Voice Analysis')).toBeTruthy();
 
     // Coming Soon Cards
-    expect(getByText('Balance Test')).toBeTruthy();
-    expect(getByText('Results / Balance Score')).toBeTruthy();
     expect(getByText('Clinician Requests')).toBeTruthy();
     expect(getByText('Human Coach Status')).toBeTruthy();
     expect(getByText('Settings & Accessibility')).toBeTruthy();
@@ -81,10 +82,6 @@ describe('HomeScreen', () => {
 
     const { getByText } = render(<HomeScreen navigation={{ navigate: mockNavigate }} />);
     
-    // Balance Test card
-    fireEvent.press(getByText('Balance Test'));
-    expect(mockNavigate).not.toHaveBeenCalled();
-
     // Settings card
     fireEvent.press(getByText('Settings & Accessibility'));
     expect(mockNavigate).not.toHaveBeenCalled();

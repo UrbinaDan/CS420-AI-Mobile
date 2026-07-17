@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useLoginContext } from '../components/LoginContext';
 
 export default function HomeScreen({ navigation }) {
@@ -7,7 +7,7 @@ export default function HomeScreen({ navigation }) {
 
   if (isAuthenticated) {
     return (
-      <View style={s.container}>
+      <ScrollView style={s.container} contentContainerStyle={s.contentContainer}>
         <Text style={s.title}>Welcome to STEDI</Text>
         <Text style={s.copy}>You are logged in as {userName}</Text>
         
@@ -43,11 +43,39 @@ export default function HomeScreen({ navigation }) {
           <Text style={s.cardDescription}>Try the interactive voice and text registration assistant</Text>
         </Pressable>
 
+        <Pressable 
+          style={s.card} 
+          onPress={() => navigation.navigate('BalanceTest')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Balance Test"
+        >
+          <Text style={s.cardTitle}>Balance Test</Text>
+          <Text style={s.cardDescription}>Complete your rapid step exercise</Text>
+        </Pressable>
+
+        <Pressable 
+          style={s.card} 
+          onPress={() => navigation.navigate('CarePlan')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Care Plan"
+        >
+          <Text style={s.cardTitle}>Care Plan</Text>
+          <Text style={s.cardDescription}>View your mobility score and exercises</Text>
+        </Pressable>
+
+        <Pressable 
+          style={s.card} 
+          onPress={() => navigation.navigate('VoiceAnalysis')}
+          accessibilityRole="button"
+          accessibilityLabel="Open Voice Analysis"
+        >
+          <Text style={s.cardTitle}>Voice Analysis</Text>
+          <Text style={s.cardDescription}>Analyze vocal markers for mobility</Text>
+        </Pressable>
+
         <Text style={s.sectionHeader}>Coming Soon</Text>
         
         {[
-          { title: "Balance Test", description: "Complete your rapid step exercise" },
-          { title: "Results / Balance Score", description: "View your mobility score" },
           { title: "Clinician Requests", description: "Manage physician data access" },
           { title: "Human Coach Status", description: "Track your escalated questions" },
           { title: "Settings & Accessibility", description: "Manage your app preferences" }
@@ -67,7 +95,7 @@ export default function HomeScreen({ navigation }) {
         <Pressable style={s.button} onPress={logout}>
           <Text style={s.buttonText}>Logout</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -86,7 +114,8 @@ export default function HomeScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#f7f8fc' },
+  container: { flex: 1, backgroundColor: '#f7f8fc' },
+  contentContainer: { padding: 24, paddingBottom: 48 },
   title: { fontSize: 30, fontWeight: '700', color: '#18204a', marginBottom: 4 },
   copy: { fontSize: 16, color: '#606582', marginBottom: 16 },
   sectionHeader: { fontSize: 20, fontWeight: '700', color: '#18204a', marginTop: 16, marginBottom: 12 },

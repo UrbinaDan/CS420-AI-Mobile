@@ -37,55 +37,51 @@ export const sendPushNotification = async (expoPushToken, username) => {
 };
 
 export const getPushToken = async (username, sessionToken) => {
-    // Note: pushtokentestonly is an external STEDI dependency not yet implemented in CSAI420-Web
-    const response = await fetch(`https://dev.stedi.me/pushtokentestonly/${username}`, {
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+    const response = await fetch(`${apiUrl}/api/push-tokens`, {
         method: 'GET',
         headers: {
-            'x-suresteps-session-token': sessionToken,
+            'Authorization': `Bearer ${sessionToken}`,
         },
     });
 
-    if (!response) {
+    if (!response || !response.ok) {
         return null;
     }
 
-    let data = null;
-
+    let result = null;
     if (typeof response.json === 'function') {
-        data = await response.json();
+        result = await response.json();
     } else if (typeof response.text === 'function') {
         const text = await response.text();
         try {
-            data = JSON.parse(text);
-        } catch {
+            result = JSON.parse(text);
+        } catch (e) {
             return text || null;
         }
     }
 
-    if (!data) {
-        return null;
+    if (result && result.success && result.tokens && result.tokens.length > 0) {
+        return result.tokens[0].token;
     }
 
-    if (typeof data === 'string') {
-        return data;
-    }
-
-    return data.expoPushToken || data.pushToken || data.token || null;
+    return null;
 };
 
 export const savePushTokenToAPI = async (userName, sessionToken, pushToken) => {
     const existingPushToken = await getPushToken(userName, sessionToken);
 
     if (existingPushToken !== pushToken) {
-        // Note: PATCH /user/:username is an external STEDI dependency not yet implemented in CSAI420-Web
-        await fetch(`https://dev.stedi.me/user/${userName}`, {
-            method: 'PATCH',
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+        await fetch(`${apiUrl}/api/push-tokens`, {
+            method: 'POST',
             headers: {
-                'x-suresteps-session-token': sessionToken,
+                'Authorization': `Bearer ${sessionToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                expoPushToken: pushToken,
+                token: pushToken,
+                platform: Platform.OS
             }),
         });
     }
